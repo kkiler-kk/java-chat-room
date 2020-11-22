@@ -10,6 +10,119 @@
             padding: 0;
             box-sizing: border-box;
         }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: grid;
+            place-items: center;
+            background-color: #F9465C;
+        }
+
+        #app {
+            min-width: 1024px;
+            min-height: 768px;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 32px #ED1D40;
+            border-radius: 32px;
+            /*padding: 48px;*/
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 25% 1fr;
+        }
+
+        .sidebar {
+            display: grid;
+            grid-template-rows: 112px 1fr;
+            background-color: #ED1D40;
+            color: #FFFFFF;
+        }
+
+        .card {
+            padding: 16px 0;
+        }
+
+        .card > header {
+            display: flex;
+            align-items: center;
+            line-height: 48px;
+            padding: 0 32px;
+        }
+
+        .avatar {
+            border: solid #FFFFFF 1px;
+            width: 32px;
+            height: 32px;
+            /*border-radius: 50%;*/
+            margin-right: 16px;
+            overflow: hidden;
+        }
+
+        .card footer {
+            padding: 0 16px 16px;
+            display: grid;
+        }
+
+        .card .search {
+            height: 32px;
+            outline: none;
+            background-color: #F9465C;
+            color: #FFFFFF;
+            border: none;
+            padding: 0 16px;
+        }
+
+        .card .search::placeholder {
+            color: #FFFFFF70;
+        }
+
+        .list {
+            overflow: auto;
+            height: 656px;
+        }
+
+        .list ul {
+            display: flex;
+            flex-direction: column;
+            list-style: none;
+            cursor: pointer;
+        }
+
+        .list li {
+            display: flex;
+            align-items: center;
+            line-height: 48px;
+            margin: 0 16px 16px;
+            padding: 0 16px;
+            transition: 0.2s;
+            background-color: #F9465C;
+            border-radius: 8px;
+        }
+
+        .list li.active {
+            margin: 0 0 16px 16px;
+            padding: 0 16px;
+            background-color: #F9F9F9;
+            color: #ED1D40;
+            order: -1;
+            border-radius: 8px 0 0 8px;
+        }
+
+        .list .avatar {
+            border: none;
+        }
+
+        .main {
+            background-color: #F9F9F9;
+        }
+
+        .main > .title {
+            height: 64px;
+            background-color: #F9465C;
+            color: #FFFFFF;
+        }
     </style>
 </head>
 <body>
@@ -19,23 +132,27 @@
     <!-- 显示个人信息 + 在线信息列表 -->
     <div class="sidebar" >
         <!-- 显示个人信息 -->
-        <div class="card"  >
-            <header >
-                <img class="avatar" onclick="f.click()" width="40" height="40" ="" alt="请设置头像" style="cursor: pointer" title="点击设置头像" :src="url">
+        <div class="card" >
+            <header>
+                <img class="avatar" onclick="f.click()" title="点击设置头像" :src="url">
                 <p class="name" >{{sendName}}</p>
             </header>
-            <footer >
+            <footer>
                 <input class="search" type="text" v-model.trim="searchVal" placeholder="搜索用户..." >
             </footer>
         </div>
         <!-- 显示聊天信息 -->
-        <div class="list"   >
+        <div class="list" >
             <ul >
-                <li  @click="onAcquireName('在线群聊')" v-bind:class="{active: '在线群聊' == receiveName}">
-                    <img src="dist/images/all.png"  class="avatar" width="30" height="30" alt="">
+                <li @click="onAcquireName('在线群聊')" v-bind:class="{active: '在线群聊' == receiveName}">
+                    <img src="dist/images/all.png"  class="avatar" alt="">
                     <p class="name" >在线群聊</p>
                 </li>
-                <li  v-for="user of searchList":key="user.name":class="{active: user.name == receiveName}" @click="onAcquireName(user.name)">
+                <li @click="onAcquireName('另一个群聊')" v-bind:class="{active: '另一个群聊' == receiveName}">
+                    <img src="dist/images/all.png"  class="avatar" alt="">
+                    <p class="name" >另一个群聊</p>
+                </li>
+                <li v-for="user of searchList":key="user.name":class="{active: user.name == receiveName}" @click="onAcquireName(user.name)">
                     <img :src="user.url"  class="avatar" width="30" height="30" alt="">
                     <p class="name" >{{user.name}}</p>
                 </li>
@@ -44,8 +161,8 @@
     </div>
     <!-- 聊天页面 -->
     <div class="main" >
-        <div>
-            <h5 class="name" style="text-align: center; color: black; font-family: Arial">{{receiveName}}</h5>
+        <div class="title">
+            {{receiveName}}
         </div>
         <div class="message" id="scrollIV"  >
             <ul >
@@ -53,9 +170,9 @@
                     <p class="time"  v-if="item.createDate">
                         <span >{{item.createDate}}</span>
                     </p>
-                    <div class="main" v-bind:class="{ self: item.sendName == sendName}" >
+                    <div class="main" :class="{ self: item.sendName == sendName}" >
                         <p class="sendName" v-if="item.receiveName == '在线群聊' && item.sendName != sendName">{{item.sendName}}</p>
-                        <img class="avatar"  width="30" height="30" :src="item.url" alt="">
+                        <img class="avatar" :src="item.url">
                         <div class="text" v-html="item.text" ></div>
                     </div>
                 </li>
@@ -65,15 +182,15 @@
         <div class="text"   >
             <textarea placeholder="按 Ctrl + Enter 发送" @keyup.ctrl.enter="send()"   name="" v-model="text" id="" cols="30" rows="10">
             </textarea>
+            <button class="button" @click="send()">发送</button>
         </div>
     </div>
-    <button class="button" @click="send()">发送</button>
-
-    <form method="post" action="/upload" name="upload" enctype="multipart/form-data">
-        <input id="f" type="file" @change="chooseImg(this)" name="file" style="display: none"><br>
+    <form method="post" action="/upload" name="upload" enctype="multipart/form-data" v-show="false">
+        <input id="f" type="file" @change="chooseImg(this)" name="file"><br>
         <input type="hidden" name="sendName" v-model="sendName"><br>
     </form>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/store.js/1.3.20/store.js"></script>
 <script src="dist/js/jquery.js"></script>
@@ -91,11 +208,13 @@
             userCount: [],
             searchVal: '',
             url: ''
-        },mounted (){
+        },
+       mounted (){
            this.sendName = $.cookie("sendName")
            this.url = '/img/'+ this.sendName + ".jpg"
            this.init()
-       },methods: {
+       },
+       methods: {
            init() {
                if(typeof(WebSocket) === "undefined"){
                    alert("您的浏览器不支持socket")
