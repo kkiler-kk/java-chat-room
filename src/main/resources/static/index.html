@@ -35,7 +35,7 @@
 
         .sidebar {
             display: grid;
-            grid-template-rows: 112px 1fr;
+            grid-template-rows: auto 1fr;
             background-color: #ED1D40;
             color: #FFFFFF;
         }
@@ -96,7 +96,6 @@
             line-height: 48px;
             margin: 0 16px 16px;
             padding: 0 16px;
-            transition: 0.2s;
             background-color: #F9465C;
             border-radius: 8px;
         }
@@ -115,13 +114,44 @@
         }
 
         .main {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
             background-color: #F9F9F9;
         }
 
         .main > .title {
             height: 64px;
+            padding: 16px 0 0 16px;
+            line-height: 48px;background-color: #F9465C;
+            color: #FFFFFF;
+        }
+
+        .main > .text {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            margin: 16px;
+            height: 64px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: solid #F9465C 1px;
+        }
+
+        .main > .text > textarea {
+            padding: 8px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            resize: none;
+        }
+
+        .main > .text > .button {
+            width: 128px;
+            font-size: 16px;
             background-color: #F9465C;
             color: #FFFFFF;
+            font-weight: bold;
+            border: none;
+            outline: none;
         }
     </style>
 </head>
