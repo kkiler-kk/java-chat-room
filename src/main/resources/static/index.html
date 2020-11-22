@@ -180,6 +180,10 @@
                     <img src="dist/images/all.png"  class="avatar" alt="">
                     <p class="name" >另一个群聊</p>
                 </li>
+                <li @click="onAcquireName('还有一个群聊')" v-bind:class="{active: '还有一个群聊' == receiveName}">
+                    <img src="dist/images/all.png"  class="avatar" alt="">
+                    <p class="name" >还有一个群聊</p>
+                </li>
                 <li v-for="user of searchList":key="user.name":class="{active: user.name == receiveName}" @click="onAcquireName(user.name)">
                     <img :src="user.url"  class="avatar" width="30" height="30" alt="">
                     <p class="name" >{{user.name}}</p>
