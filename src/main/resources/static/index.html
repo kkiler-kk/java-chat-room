@@ -393,8 +393,8 @@
                     return;
                } else if(this.receiveName == ""){
                    alert("请指定发送人")
-               } else if (this.text.length > 250){
-                   alert("长度不能超过250")
+               } else if (this.text.length < 0){
+                   return
                }else {
                    let json = JSON.stringify({
                        text: this.text,
