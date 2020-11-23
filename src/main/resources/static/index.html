@@ -114,7 +114,7 @@
         .main {
             display: grid;
             grid-template-rows: auto 1fr auto;
-            background-color: #F9F9F9;
+            background-color: #efefef;
         }
 
         .main > .title {
@@ -122,6 +122,9 @@
             padding: 16px 0 0 16px;
             line-height: 48px;background-color: #F9465C;
             color: #FFFFFF;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
         }
 
         .main > .text {
@@ -134,7 +137,7 @@
             border: solid #F9465C 1px;
         }
 
-        .main > .text > textarea {
+        .main > .text > .input {
             padding: 8px;
             font-size: 16px;
             border: none;
@@ -150,6 +153,64 @@
             font-weight: bold;
             border: none;
             outline: none;
+        }
+
+        .main > .messages {
+            list-style: none;
+            height: 624px;
+            overflow: auto;
+        }
+
+        .main > .messages > li {
+            display: flex;
+        }
+
+        .main > .messages > li.self {
+            flex-direction: row-reverse;
+        }
+
+        .main > .messages .avatar {
+            border-color: #F9465C;
+        }
+
+        .main > .messages .avatar.mt {
+            margin-top: 16px;
+        }
+
+        .main > .messages > li.self .avatar {
+            flex-direction: row-reverse;
+            margin: 0 0 0 16px;
+        }
+
+        .main > .messages .content {
+            margin: 16px;
+            display: flex;
+        }
+
+        .main > .messages .sendName {
+            line-height: 32px;
+        }
+
+        .main > .messages > li.self > .content {
+            flex-direction: row-reverse;
+        }
+
+        .main > .messages .text {
+            position: relative;
+            max-width: 384px;
+            padding: 16px;
+            border-radius: 0 16px 16px 16px;
+            background-color: #FFFFFF;
+        }
+
+        .main > .messages .text * {
+            width: 100%;
+        }
+
+        .main > .messages > li.self .text {
+            border-radius: 16px 0 16px 16px;
+            background-color: #F9465C;
+            color: #FFFFFF;
         }
     </style>
 </head>
@@ -169,23 +230,20 @@
                 <input class="search" type="text" v-model.trim="searchVal" placeholder="搜索用户..." >
             </footer>
         </div>
-        <!-- 显示聊天信息 -->
+        <!-- 显示列表 -->
         <div class="list" >
-            <ul >
-                <li @click="onAcquireName('在线群聊')" v-bind:class="{active: '在线群聊' == receiveName}">
+            <ul>
+                <li @click="onAcquireName('在线群聊')" :class="{active: '在线群聊' == receiveName}">
                     <img src="dist/images/all.png"  class="avatar" alt="">
                     <p class="name" >在线群聊</p>
                 </li>
-                <li @click="onAcquireName('另一个群聊')" v-bind:class="{active: '另一个群聊' == receiveName}">
-                    <img src="dist/images/all.png"  class="avatar" alt="">
-                    <p class="name" >另一个群聊</p>
-                </li>
-                <li @click="onAcquireName('还有一个群聊')" v-bind:class="{active: '还有一个群聊' == receiveName}">
-                    <img src="dist/images/all.png"  class="avatar" alt="">
-                    <p class="name" >还有一个群聊</p>
-                </li>
-                <li v-for="user of searchList":key="user.name":class="{active: user.name == receiveName}" @click="onAcquireName(user.name)">
-                    <img :src="user.url"  class="avatar" width="30" height="30" alt="">
+                <li
+                        v-for="user of searchList"
+                        :class="{active: user.name == receiveName}"
+                        @click="onAcquireName(user.name)"
+                        v-if="user.name != sendName"
+                        :key="user.name" >
+                    <img :src="user.url" class="avatar">
                     <p class="name" >{{user.name}}</p>
                 </li>
             </ul>
@@ -193,27 +251,36 @@
     </div>
     <!-- 聊天页面 -->
     <div class="main" >
+        <!-- 发送人 -->
         <div class="title">
             {{receiveName}}
         </div>
-        <div class="message" id="scrollIV"  >
-            <ul >
-                <li  v-for="item of message">
-                    <p class="time"  v-if="item.createDate">
-                        <span >{{item.createDate}}</span>
-                    </p>
-                    <div class="main" :class="{ self: item.sendName == sendName}" >
+
+        <!-- 聊天消息 -->
+        <ul class="messages" id="scrollIV">
+            <li v-for="item of message" :class="{ self: item.sendName == sendName}">
+                <p class="time"  v-if="false">
+                    <span>{{item.createDate}}</span>
+                </p>
+                <div class="content">
+                    <img class="avatar" :class="{mt: item.receiveName == '在线群聊'}" :src="item.url">
+                    <div>
                         <p class="sendName" v-if="item.receiveName == '在线群聊' && item.sendName != sendName">{{item.sendName}}</p>
-                        <img class="avatar" :src="item.url">
-                        <div class="text" v-html="item.text" ></div>
+                        <div class="text" v-html="item.text"></div>
                     </div>
-                </li>
-            </ul>
-        </div>
-        <!-- 发送信息内容 -->
-        <div class="text"   >
-            <textarea placeholder="按 Ctrl + Enter 发送" @keyup.ctrl.enter="send()"   name="" v-model="text" id="" cols="30" rows="10">
-            </textarea>
+                </div>
+            </li>
+        </ul>
+
+        <!-- 消息发送组件 -->
+        <div class="text">
+            <div
+                    contenteditable="true"
+                    class="input"
+                    placeholder="按 Ctrl + Enter 发送"
+                    @input="edit($event)"
+                    @keyup.ctrl.enter="send($event)">
+            </div>
             <button class="button" @click="send()">发送</button>
         </div>
     </div>
@@ -228,7 +295,7 @@
 <script src="dist/js/jquery.js"></script>
 <script src="dist/js/jquery.cookie.js"></script>
 <script>
-   let app =  new Vue({
+   const app =  new Vue({
         el: '#app',
         data: {
             path: 'ws://127.0.0.1:8080/websocket',
@@ -314,7 +381,7 @@
                store.set(sendName, {message: messageList});
 
            },
-           send() {
+           send(event) {
                if (this.sendName == "" || this.sendName == null){
                    alert("请设置昵称")
                    this.sendName = prompt("昵称：");
@@ -342,6 +409,7 @@
                        this.message.push(JSON.parse(json))
                    }
                    store.set(this.receiveName, {message: this.message});
+                   event.target.innerHTML = "";
                }
            },
            close() {
@@ -360,20 +428,31 @@
                    let elementById = document.getElementById("scrollIV");
                    elementById.scrollTop = elementById.scrollHeight;
                })
-           }, nextTick(){
+           },
+           nextTick(){
                this.$nextTick(function(){
                    let elementById = document.getElementById("scrollIV");
                    elementById.scrollTop = elementById.scrollHeight;
                })
-           },  chooseImg(file){
+           },
+           hooseImg(file){
                 if(file != null && this.sendName != null){
                      document.forms['upload'].submit()
                 }
-            }
-       }, destroyed () {
+            },
+           nextLine(event) {
+               console.log("next line");
+               this.text += "\n";
+           },
+           edit(event) {
+               this.text = event.target.innerHTML;
+           }
+       },
+       destroyed () {
            // 销毁监听
            this.socket.onclose = this.close
-       },computed: {
+       },
+       computed: {
            searchList: function(){
                return this.userCount.filter((text) => {
                    return text.name.toLowerCase().match(this.searchVal.toLowerCase());
