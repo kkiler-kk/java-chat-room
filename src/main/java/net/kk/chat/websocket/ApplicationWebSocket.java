@@ -1,5 +1,4 @@
 package net.kk.chat.websocket;
-import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.kk.chat.entity.Message;
@@ -10,14 +9,13 @@ import javax.websocket.*;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * @author jackcooper
+ * @author KK
  * @create 2017-12-28 13:04
  */
 @ServerEndpoint(value = "/websocket")
@@ -70,14 +68,12 @@ public class ApplicationWebSocket{
     public void sendMessageAll(String sendName, Message message) throws IOException {
         Set<String> names = getNames();
         message.setText(message.getText().replaceAll("\n","<br>"));
-        message.setCreateDate(DateUtil.format(new Date(), "MM-dd hh:mm"));
         message.setUrl("/img/" + sendName + ".jpg");
         String jsonMessage = JSON.toJSONString(message);
         sendMessageAll(jsonMessage);
     }
     public void sendMessage(String toName, String sendName, Message message) throws IOException {
         message.setText(message.getText().replaceAll("\n","<br>"));
-        message.setCreateDate(DateUtil.format(new Date(), "MM-dd hh:mm"));
         message.setUrl("/img/" + sendName + ".jpg");
         String jsonMessage = JSON.toJSONString(message);
         if(!toName.equals(sendName)){
