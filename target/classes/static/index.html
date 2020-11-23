@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-bind="http://xmlns.jcp.org/jsf/html">
+<head>
+    <meta charset="utf-8">
+    <title>聊天室</title>
+    <link rel="shortcut icon" type="image/x-icon" href="dist/images/favicon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: grid;
+            place-items: center;
+            background-color: #F9465C;
+        }
+
+        #app {
+            min-width: 1024px;
+            min-height: 768px;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 32px #ED1D40;
+            border-radius: 32px;
+            /*padding: 48px;*/
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 25% 1fr;
+        }
+
+        .sidebar {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            background-color: #ED1D40;
+            color: #FFFFFF;
+        }
+
+        .card {
+            padding: 16px 0;
+        }
+
+        .card > header {
+            display: flex;
+            align-items: center;
+            line-height: 48px;
+            padding: 0 32px;
+        }
+
+        .avatar {
+            border: solid #FFFFFF 1px;
+            width: 32px;
+            height: 32px;
+            /*border-radius: 50%;*/
+            margin-right: 16px;
+            overflow: hidden;
+        }
+
+        .card footer {
+            padding: 0 16px 16px;
+            display: grid;
+        }
+
+        .card .search {
+            height: 32px;
+            outline: none;
+            background-color: #F9465C;
+            color: #FFFFFF;
+            border: none;
+            padding: 0 16px;
+        }
+
+        .card .search::placeholder {
+            color: #FFFFFF70;
+        }
+
+        .list {
+            overflow: auto;
+            height: 656px;
+        }
+
+        .list ul {
+            display: flex;
+            flex-direction: column;
+            list-style: none;
+            cursor: pointer;
+        }
+
+        .list li {
+            display: flex;
+            align-items: center;
+            line-height: 48px;
+            margin: 0 16px 16px;
+            padding: 0 16px;
+            background-color: #F9465C;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .list li.active {
+            background-color: #F9F9F9;
+            color: #ED1D40;
+            order: -1;
+        }
+
+        .list .avatar {
+            border: none;
+        }
+
+        .main {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            background-color: #efefef;
+        }
+
+        .main > .title {
+            height: 64px;
+            padding: 16px 0 0 16px;
+            line-height: 48px;background-color: #F9465C;
+            color: #FFFFFF;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .main > .text {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            margin: 16px;
+            height: 64px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: solid #F9465C 1px;
+        }
+
+        .main > .text > .input {
+            padding: 8px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            resize: none;
+        }
+
+        .main > .text > .button {
+            width: 128px;
+            font-size: 16px;
+            background-color: #F9465C;
+            color: #FFFFFF;
+            font-weight: bold;
+            border: none;
+            outline: none;
+        }
+
+        .main > .messages {
+            list-style: none;
+            height: 624px;
+            overflow: auto;
+        }
+
+        .main > .messages > li {
+            display: flex;
+        }
+
+        .main > .messages > li.self {
+            flex-direction: row-reverse;
+        }
+
+        .main > .messages .avatar {
+            border-color: #F9465C;
+        }
+
+        .main > .messages .avatar.mt {
+            margin-top: 16px;
+        }
+
+        .main > .messages > li.self .avatar {
+            flex-direction: row-reverse;
+            margin: 0 0 0 16px;
+        }
+
+        .main > .messages .content {
+            margin: 16px;
+            display: flex;
+        }
+
+        .main > .messages .sendName {
+            line-height: 32px;
+        }
+
+        .main > .messages > li.self > .content {
+            flex-direction: row-reverse;
+        }
+
+        .main > .messages .text {
+            position: relative;
+            max-width: 384px;
+            padding: 16px;
+            border-radius: 0 16px 16px 16px;
+            background-color: #FFFFFF;
+        }
+
+        .main > .messages .text * {
+            width: 100%;
+        }
+
+        .main > .messages > li.self .text {
+            border-radius: 16px 0 16px 16px;
+            background-color: #F9465C;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 总页面 -->
+<div id="app" >
+    <!-- 显示个人信息 + 在线信息列表 -->
+    <div class="sidebar" >
+        <!-- 显示个人信息 -->
+        <div class="card" >
+            <header>
+                <img class="avatar" onclick="f.click()" title="点击设置头像" :src="url">
+                <p class="name" >{{sendName}}</p>
+            </header>
+            <footer>
+                <input class="search" type="text" v-model.trim="searchVal" placeholder="搜索用户..." >
+            </footer>
+        </div>
+        <!-- 显示列表 -->
+        <div class="list" >
+            <ul>
+                <li @click="onAcquireName('在线群聊')" :class="{active: '在线群聊' == receiveName}">
+                    <img src="dist/images/all.png"  class="avatar" alt="">
+                    <p class="name" >在线群聊</p>
+                </li>
+                <li
+                        v-for="user of searchList"
+                        :class="{active: user.name == receiveName}"
+                        @click="onAcquireName(user.name)"
+                        v-if="user.name != sendName"
+                        :key="user.name" >
+                    <img :src="user.url" class="avatar">
+                    <p class="name" >{{user.name}}</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!-- 聊天页面 -->
+    <div class="main" >
+        <!-- 发送人 -->
+        <div class="title">
+            {{receiveName}}
+        </div>
+
+        <!-- 聊天消息 -->
+        <ul class="messages" id="scrollIV">
+            <li v-for="item of message" :class="{ self: item.sendName == sendName}">
+                <p class="time"  v-if="false">
+                    <span>{{item.createDate}}</span>
+                </p>
+                <div class="content">
+                    <img class="avatar" :class="{mt: item.receiveName == '在线群聊'}" :src="item.url">
+                    <div>
+                        <p class="sendName" v-if="item.receiveName == '在线群聊' && item.sendName != sendName">{{item.sendName}}</p>
+                        <div class="text" v-html="item.text"></div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <!-- 消息发送组件 -->
+        <div class="text">
+            <div
+                    contenteditable="true"
+                    class="input"
+                    placeholder="按 Ctrl + Enter 发送"
+                    @input="edit($event)"
+                    @keyup.ctrl.enter="send($event)">
+            </div>
+            <button class="button" @click="send()">发送</button>
+        </div>
+    </div>
+    <form method="post" action="/upload" name="upload" enctype="multipart/form-data" v-show="false">
+        <input id="f" type="file" @change="chooseImg(this)" name="file"><br>
+        <input type="hidden" name="sendName" v-model="sendName"><br>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/store.js/1.3.20/store.js"></script>
+<script src="dist/js/jquery.js"></script>
+<script src="dist/js/jquery.cookie.js"></script>
+<script>
+   const app =  new Vue({
+        el: '#app',
+        data: {
+            path: 'ws://127.0.0.1:8080/websocket',
+            socket: null,
+            message: [],
+            sendName: '',
+            receiveName: '',
+            text: '',
+            userCount: [],
+            searchVal: '',
+            url: ''
+        },
+       mounted (){
+           this.sendName = $.cookie("sendName")
+           this.url = '/img/'+ this.sendName + ".jpg"
+           this.init()
+       },
+       methods: {
+           init() {
+               if(typeof(WebSocket) === "undefined"){
+                   alert("您的浏览器不支持socket")
+               }else{
+                   // 实例化socket
+                   this.socket = new WebSocket(this.path)
+                   // 监听socket连接
+                   this.socket.onopen = this.open
+                   // 监听socket错误信息
+                   this.socket.onerror = this.error
+                   // 监听socket消息
+                   this.socket.onmessage = this.getMessage
+               }
+
+           },
+           open() {
+               console.log("socket连接成功")
+               if (this.sendName != ""){
+                   this.socket.send(JSON.stringify({sendName:this.sendName,type:"setting"}))
+               }
+           },
+           error() {
+               console.log("连接错误")
+           },
+           getMessage(msg) {
+                console.log(msg.data)
+               let parse = JSON.parse(msg.data);
+               console.log(parse)
+               if(parse.type == "userCount"){
+                   this.userCount = parse.userCount
+                   return
+               } else if(parse.sendName == this.receiveName && parse.receiveName != "在线群聊" && parse.sendName != this.sendName){
+                   this.message.push(parse)
+               }else if(parse.receiveName == "在线群聊" && this.receiveName == parse.receiveName){
+                   this.message.push(parse)
+                   let messageList = [];
+                   let chatData = store.get("在线群聊")
+                   if(chatData != null){
+                       messageList = chatData.message;
+                       messageList.push(parse)
+                   }
+                   store.set("在线群聊", {message: messageList});
+                   this.nextTick()
+                   return;
+               }else if(parse.receiveName == "在线群聊" && this.receiveName != parse.receiveName){
+                   let chatData = store.get("在线群聊")
+                   let messageList = [];
+                   if(chatData != null){
+                       messageList = chatData.message;
+                       messageList.push(parse)
+                   }
+                   store.set("在线群聊", {message: messageList});
+                   this.nextTick()
+                   return;
+               }
+               this.nextTick()
+               let sendName = parse.sendName;
+               if(this.sendName == sendName) return;
+               let messageList = [];
+               let chat = store.get(sendName);
+               if (chat != null) {
+                   messageList = chat.message;
+                   messageList.push(parse)
+               }
+               store.set(sendName, {message: messageList});
+
+           },
+           send(event) {
+               if (this.sendName == "" || this.sendName == null){
+                   alert("请设置昵称")
+                   this.sendName = prompt("昵称：");
+                   if(this.sendName == "在线群聊") return;
+                   $.cookie("sendName",this.sendName,{expires:7,path:"/"})
+                   let json = JSON.stringify({sendName:this.sendName,type:"setting"});
+                   this.socket.send(json)
+               } else if (this.text == null || this.text == ""){
+                    return;
+               } else if(this.receiveName == ""){
+                   alert("请指定发送人")
+               } else if (this.text.length < 0){
+                   return
+               }else {
+                   let json = JSON.stringify({
+                       text: this.text,
+                       type: "message",
+                       receiveName: this.receiveName,
+                       sendName: this.sendName,
+                       url: this.url
+                   })
+                   this.socket.send(json)
+                   this.text = ""
+                   if(this.receiveName != "在线群聊"){
+                       this.message.push(JSON.parse(json))
+                   }
+                   store.set(this.receiveName, {message: this.message});
+                   event.target.innerHTML = "";
+               }
+           },
+           close() {
+               console.log("socket连接关闭")
+           },
+           onAcquireName : function (name) {
+               this.receiveName = name
+               this.message = []
+               let chat = store.get(this.receiveName);
+               if(chat != null){
+                   this.message = store.get(this.receiveName).message;
+               }else{
+                   store.set(this.receiveName, {message: this.message})
+               }
+               this.$nextTick(function(){
+                   let elementById = document.getElementById("scrollIV");
+                   elementById.scrollTop = elementById.scrollHeight;
+               })
+           },
+           nextTick(){
+               this.$nextTick(function(){
+                   let elementById = document.getElementById("scrollIV");
+                   elementById.scrollTop = elementById.scrollHeight;
+               })
+           },
+           hooseImg(file){
+                if(file != null && this.sendName != null){
+                     document.forms['upload'].submit()
+                }
+            },
+           nextLine(event) {
+               console.log("next line");
+               this.text += "\n";
+           },
+           edit(event) {
+               this.text = event.target.innerHTML;
+           }
+       },
+       destroyed () {
+           // 销毁监听
+           this.socket.onclose = this.close
+       },
+       computed: {
+           searchList: function(){
+               return this.userCount.filter((text) => {
+                   return text.name.toLowerCase().match(this.searchVal.toLowerCase());
+               })
+           }
+       }
+    })
+</script>
+</body>
+</html>
