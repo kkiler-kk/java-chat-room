@@ -12,5 +12,4 @@ public class MessageUtil {
         builder.append("],\"type\": \"userCount\"}");
         return builder.toString();
     }
-     //builder.append("{\"name\":\"").append(name + "\"").append("\"url\":").append("\"/img/ \"},");
 }

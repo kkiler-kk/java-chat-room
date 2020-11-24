@@ -38,9 +38,9 @@ public class ApplicationWebSocket{
             Message message = mapper.readValue(text, Message.class);
             String type = message.getType();
             String sendName = message.getSendName();
-            if ("setting".equals(type)){
+            if (Objects.equals("setting", type)){
                 setting(sendName);
-            }else if("在线群聊".equals(message.getReceiveName())){
+            }else if(Objects.equals("在线群聊", message.getReceiveName() )){
                 sendMessageAll(sendName, message);
             } else{
                 String toName = message.getReceiveName();
@@ -68,17 +68,12 @@ public class ApplicationWebSocket{
     public void sendMessageAll(String sendName, Message message) throws IOException {
         Set<String> names = getNames();
         message.setText(message.getText().replaceAll("\n","<br>"));
-        message.setUrl("/img/" + sendName + ".jpg");
         String jsonMessage = JSON.toJSONString(message);
         sendMessageAll(jsonMessage);
     }
     public void sendMessage(String toName, String sendName, Message message) throws IOException {
         message.setText(message.getText().replaceAll("\n","<br>"));
-        message.setUrl("/img/" + sendName + ".jpg");
         String jsonMessage = JSON.toJSONString(message);
-        if(!toName.equals(sendName)){
-            ApplicationWebSocket.webSocket.get(sendName).session.getBasicRemote().sendText(jsonMessage);
-        }
         ApplicationWebSocket.webSocket.get(toName).session.getBasicRemote().sendText(jsonMessage);
     }
     public void setting(String sendName) throws IOException {

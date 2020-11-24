@@ -339,9 +339,7 @@
                console.log("连接错误")
            },
            getMessage(msg) {
-                console.log(msg.data)
                let parse = JSON.parse(msg.data);
-               console.log(parse)
                if(parse.type == "userCount"){
                    this.userCount = parse.userCount
                    return
@@ -396,6 +394,7 @@
                } else if (this.text.length < 0){
                    return
                }else {
+
                    let json = JSON.stringify({
                        text: this.text,
                        type: "message",
