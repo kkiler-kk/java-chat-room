@@ -120,7 +120,8 @@
         .main > .title {
             height: 64px;
             padding: 16px 0 0 16px;
-            line-height: 48px;background-color: #F9465C;
+            line-height: 48px;
+            background-color: #F9465C;
             color: #FFFFFF;
             text-align: center;
             font-size: 18px;
@@ -217,40 +218,40 @@
 <body>
 
 <!-- 总页面 -->
-<div id="app" >
+<div id="app">
     <!-- 显示个人信息 + 在线信息列表 -->
-    <div class="sidebar" >
+    <div class="sidebar">
         <!-- 显示个人信息 -->
-        <div class="card" >
+        <div class="card">
             <header>
                 <img class="avatar" onclick="f.click()" title="点击设置头像" :src="url">
-                <p class="name" >{{sendName}}</p>
+                <p class="name">{{sendName}}</p>
             </header>
             <footer>
-                <input class="search" type="text" v-model.trim="searchVal" placeholder="搜索用户..." >
+                <input class="search" type="text" v-model.trim="searchVal" placeholder="搜索用户...">
             </footer>
         </div>
         <!-- 显示列表 -->
-        <div class="list" >
+        <div class="list">
             <ul>
                 <li @click="onAcquireName('在线群聊')" :class="{active: '在线群聊' == receiveName}">
-                    <img src="dist/images/all.png"  class="avatar" alt="">
-                    <p class="name" >在线群聊</p>
+                    <img src="dist/images/all.png" class="avatar" alt="">
+                    <p class="name">在线群聊</p>
                 </li>
                 <li
                         v-for="user of searchList"
                         :class="{active: user.name == receiveName}"
                         @click="onAcquireName(user.name)"
                         v-if="user.name != sendName"
-                        :key="user.name" >
+                        :key="user.name">
                     <img :src="user.url" class="avatar">
-                    <p class="name" >{{user.name}}</p>
+                    <p class="name">{{user.name}}</p>
                 </li>
             </ul>
         </div>
     </div>
     <!-- 聊天页面 -->
-    <div class="main" >
+    <div class="main">
         <!-- 发送人 -->
         <div class="title">
             {{receiveName}}
@@ -259,13 +260,14 @@
         <!-- 聊天消息 -->
         <ul class="messages" id="scrollIV">
             <li v-for="item of message" :class="{ self: item.sendName == sendName}">
-                <p class="time"  v-if="false">
+                <p class="time" v-if="false">
                     <span>{{item.createDate}}</span>
                 </p>
                 <div class="content">
                     <img class="avatar" :class="{mt: item.receiveName == '在线群聊'}" :src="item.url">
                     <div>
-                        <p class="sendName" v-if="item.receiveName == '在线群聊' && item.sendName != sendName">{{item.sendName}}</p>
+                        <p class="sendName" v-if="item.receiveName == '在线群聊' && item.sendName != sendName">
+                            {{item.sendName}}</p>
                         <div class="text" v-html="item.text"></div>
                     </div>
                 </div>
@@ -295,7 +297,7 @@
 <script src="dist/js/jquery.js"></script>
 <script src="dist/js/jquery.cookie.js"></script>
 <script>
-   const app =  new Vue({
+    const app = new Vue({
         el: '#app',
         data: {
             path: 'ws://127.0.0.1:8080/websocket',
@@ -308,157 +310,157 @@
             searchVal: '',
             url: ''
         },
-       mounted (){
-           this.sendName = $.cookie("sendName")
-           this.url = '/img/'+ this.sendName + ".jpg"
-           this.init()
-       },
-       methods: {
-           init() {
-               if(typeof(WebSocket) === "undefined"){
-                   alert("您的浏览器不支持socket")
-               }else{
-                   // 实例化socket
-                   this.socket = new WebSocket(this.path)
-                   // 监听socket连接
-                   this.socket.onopen = this.open
-                   // 监听socket错误信息
-                   this.socket.onerror = this.error
-                   // 监听socket消息
-                   this.socket.onmessage = this.getMessage
-               }
+        mounted() {
+            this.sendName = $.cookie("sendName")
+            this.url = '/upload/' + this.sendName + ".jpg"
+            this.init()
+        },
+        methods: {
+            init() {
+                if (typeof (WebSocket) === "undefined") {
+                    alert("您的浏览器不支持socket")
+                } else {
+                    // 实例化socket
+                    this.socket = new WebSocket(this.path)
+                    // 监听socket连接
+                    this.socket.onopen = this.open
+                    // 监听socket错误信息
+                    this.socket.onerror = this.error
+                    // 监听socket消息
+                    this.socket.onmessage = this.getMessage
+                }
 
-           },
-           open() {
-               console.log("socket连接成功")
-               if (this.sendName != ""){
-                   this.socket.send(JSON.stringify({sendName:this.sendName,type:"setting"}))
-               }
-           },
-           error() {
-               console.log("连接错误")
-           },
-           getMessage(msg) {
-                console.log(msg.data)
-               let parse = JSON.parse(msg.data);
-               console.log(parse)
-               if(parse.type == "userCount"){
-                   this.userCount = parse.userCount
-                   return
-               } else if(parse.sendName == this.receiveName && parse.receiveName != "在线群聊" && parse.sendName != this.sendName){
-                   this.message.push(parse)
-               }else if(parse.receiveName == "在线群聊" && this.receiveName == parse.receiveName){
-                   this.message.push(parse)
-                   let messageList = [];
-                   let chatData = store.get("在线群聊")
-                   if(chatData != null){
-                       messageList = chatData.message;
-                       messageList.push(parse)
-                   }
-                   store.set("在线群聊", {message: messageList});
-                   this.nextTick()
-                   return;
-               }else if(parse.receiveName == "在线群聊" && this.receiveName != parse.receiveName){
-                   let chatData = store.get("在线群聊")
-                   let messageList = [];
-                   if(chatData != null){
-                       messageList = chatData.message;
-                       messageList.push(parse)
-                   }
-                   store.set("在线群聊", {message: messageList});
-                   this.nextTick()
-                   return;
-               }
-               this.nextTick()
-               let sendName = parse.sendName;
-               if(this.sendName == sendName) return;
-               let messageList = [];
-               let chat = store.get(sendName);
-               if (chat != null) {
-                   messageList = chat.message;
-                   messageList.push(parse)
-               }
-               store.set(sendName, {message: messageList});
-
-           },
-           send(event) {
-               if (this.sendName == "" || this.sendName == null){
-                   alert("请设置昵称")
-                   this.sendName = prompt("昵称：");
-                   if(this.sendName == "在线群聊") return;
-                   $.cookie("sendName",this.sendName,{expires:7,path:"/"})
-                   let json = JSON.stringify({sendName:this.sendName,type:"setting"});
-                   this.socket.send(json)
-               } else if (this.text == null || this.text == ""){
-                    return;
-               } else if(this.receiveName == ""){
-                   alert("请指定发送人")
-               } else if (this.text.length < 0){
-                   return
-               }else {
-                   let json = JSON.stringify({
-                       text: this.text,
-                       type: "message",
-                       receiveName: this.receiveName,
-                       sendName: this.sendName,
-                       url: this.url
-                   })
-                   this.socket.send(json)
-                   this.text = ""
-                   if(this.receiveName != "在线群聊"){
-                       this.message.push(JSON.parse(json))
-                   }
-                   store.set(this.receiveName, {message: this.message});
-                   event.target.innerHTML = "";
-               }
-           },
-           close() {
-               console.log("socket连接关闭")
-           },
-           onAcquireName : function (name) {
-               this.receiveName = name
-               this.message = []
-               let chat = store.get(this.receiveName);
-               if(chat != null){
-                   this.message = store.get(this.receiveName).message;
-               }else{
-                   store.set(this.receiveName, {message: this.message})
-               }
-               this.$nextTick(function(){
-                   let elementById = document.getElementById("scrollIV");
-                   elementById.scrollTop = elementById.scrollHeight;
-               })
-           },
-           nextTick(){
-               this.$nextTick(function(){
-                   let elementById = document.getElementById("scrollIV");
-                   elementById.scrollTop = elementById.scrollHeight;
-               })
-           },
-           hooseImg(file){
-                if(file != null && this.sendName != null){
-                     document.forms['upload'].submit()
+            },
+            open() {
+                console.log("socket连接成功")
+                if (this.sendName != "") {
+                    this.socket.send(JSON.stringify({sendName: this.sendName, type: "setting"}))
                 }
             },
-           nextLine(event) {
-               console.log("next line");
-               this.text += "\n";
-           },
-           edit(event) {
-               this.text = event.target.innerHTML;
-           }
-       },
-       destroyed () {
-           // 销毁监听
-           this.socket.onclose = this.close
-       },
-       computed: {
-           searchList: function(){
-               return this.userCount.filter((text) => {
-                   return text.name.toLowerCase().match(this.searchVal.toLowerCase());
-               })
-           }
-       }
+            error() {
+                console.log("连接错误")
+            },
+            getMessage(msg) {
+                let parse = JSON.parse(msg.data);
+                if (parse.type == "userCount") {
+                    this.userCount = parse.userCount
+                    return
+                } else if (parse.sendName == this.receiveName && parse.receiveName != "在线群聊" && parse.sendName != this.sendName) {
+                    this.message.push(parse)
+                } else if (parse.receiveName == "在线群聊" && this.receiveName == parse.receiveName) {
+                    this.message.push(parse)
+                    let messageList = [];
+                    let chatData = store.get("在线群聊")
+                    if (chatData != null) {
+                        messageList = chatData.message;
+                        messageList.push(parse)
+                    }
+                    store.set("在线群聊", {message: messageList});
+                    this.nextTick()
+                    return;
+                } else if (parse.receiveName == "在线群聊" && this.receiveName != parse.receiveName) {
+                    let chatData = store.get("在线群聊")
+                    let messageList = [];
+                    if (chatData != null) {
+                        messageList = chatData.message;
+                        messageList.push(parse)
+                    }
+                    store.set("在线群聊", {message: messageList});
+                    this.nextTick()
+                    return;
+                }
+                this.nextTick()
+                let sendName = parse.sendName;
+                if (this.sendName == sendName) return;
+                let messageList = [];
+                let chat = store.get(sendName);
+                if (chat != null) {
+                    messageList = chat.message;
+                    messageList.push(parse)
+                }
+                store.set(sendName, {message: messageList});
+
+            },
+            send(event) {
+                if (this.sendName == "" || this.sendName == null) {
+                    alert("请设置昵称")
+                    this.sendName = prompt("昵称：");
+                    if (this.sendName == "在线群聊") return;
+                    $.cookie("sendName", this.sendName, {expires: 7, path: "/"})
+                    let json = JSON.stringify({sendName: this.sendName, type: "setting"});
+                    this.socket.send(json)
+                } else if (this.text == null || this.text == "") {
+                    return;
+                } else if (this.receiveName == "") {
+                    alert("请指定发送人")
+                } else if (this.text.length < 0) {
+                    return
+                } else {
+
+                    let json = JSON.stringify({
+                        text: this.text,
+                        type: "message",
+                        receiveName: this.receiveName,
+                        sendName: this.sendName,
+                        url: this.url
+                    })
+                    this.socket.send(json)
+                    this.text = ""
+                    if (this.receiveName != "在线群聊") {
+                        this.message.push(JSON.parse(json))
+                    }
+                    store.set(this.receiveName, {message: this.message});
+                    event.target.innerHTML = "";
+                }
+            },
+            close() {
+                console.log("socket连接关闭")
+            },
+            onAcquireName: function (name) {
+                this.receiveName = name
+                this.message = []
+                let chat = store.get(this.receiveName);
+                if (chat != null) {
+                    this.message = store.get(this.receiveName).message;
+                } else {
+                    store.set(this.receiveName, {message: this.message})
+                }
+                this.$nextTick(function () {
+                    let elementById = document.getElementById("scrollIV");
+                    elementById.scrollTop = elementById.scrollHeight;
+                })
+            },
+            nextTick() {
+                this.$nextTick(function () {
+                    let elementById = document.getElementById("scrollIV");
+                    elementById.scrollTop = elementById.scrollHeight;
+                })
+            },
+            chooseImg(file) {
+                console.log(this.sendName);
+                if (file != null && this.sendName != null) {
+                    document.forms['upload'].submit()
+                }
+            },
+            nextLine(event) {
+                console.log("next line");
+                this.text += "\n";
+            },
+            edit(event) {
+                this.text = event.target.innerHTML;
+            }
+        },
+        destroyed() {
+            // 销毁监听
+            this.socket.onclose = this.close
+        },
+        computed: {
+            searchList: function () {
+                return this.userCount.filter((text) => {
+                    return text.name.toLowerCase().match(this.searchVal.toLowerCase());
+                })
+            }
+        }
     })
 </script>
 </body>

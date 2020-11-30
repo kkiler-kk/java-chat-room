@@ -7,6 +7,7 @@ public class Message {
     private String text;  //内容
     private String receiveName; //接收者
     private String url; //发送者图片
+
     @Override
     public String toString() {
         return "Message{" +
@@ -18,9 +19,10 @@ public class Message {
                 '}';
     }
 
-    public Message(){
+    public Message() {
 
     }
+
     public Message(String sendName, String type, String createDate, String text, String receiveName) {
         this.sendName = sendName;
         this.type = type;
@@ -28,12 +30,15 @@ public class Message {
         this.text = text;
         this.receiveName = receiveName;
     }
-    public String getUrl(){
+
+    public String getUrl() {
         return url;
     }
-    public void setUrl(String url){
+
+    public void setUrl(String url) {
         this.url = url;
     }
+
     public String getSendName() {
         return sendName;
     }

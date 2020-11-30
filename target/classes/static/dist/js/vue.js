@@ -7732,8 +7732,8 @@
             handler = original._wrapper = function (e) {
                 if (
                     // no bubbling, should always fire.
-                // this is just a safety net in case event.timeStamp is unreliable in
-                // certain weird environments...
+                    // this is just a safety net in case event.timeStamp is unreliable in
+                    // certain weird environments...
                     e.target === e.currentTarget ||
                     // event is fired after handler attachment
                     e.timeStamp >= attachedTimestamp ||
@@ -7853,9 +7853,9 @@
                 }
             } else if (
                 // skip the update if old and new VDOM state is the same.
-            // `value` is handled separately because the DOM value may be temporarily
-            // out of sync with VDOM state due to focus, composition and modifiers.
-            // This  #4521 by skipping the unnecesarry `checked` update.
+                // `value` is handled separately because the DOM value may be temporarily
+                // out of sync with VDOM state due to focus, composition and modifiers.
+                // This  #4521 by skipping the unnecesarry `checked` update.
                 cur !== oldProps[key]
             ) {
                 // some property updates can throw
