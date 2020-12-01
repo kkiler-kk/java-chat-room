@@ -3,7 +3,7 @@ package net.kk.chat.utils;
 import java.util.Set;
 
 public class MessageUtil {
-    public static String getMessageJSON(Set<String> names) {
+    public static String getMessNames(Set<String> names) {
         StringBuilder builder = new StringBuilder("{\"userCount\":[");
         for (String name : names) {
             builder.append("{\"name\":\"").append(name + "\",").append("\"url\":\"").append("/upload/" + name + ".jpg\"},");

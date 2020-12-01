@@ -7,7 +7,6 @@ import net.kk.chat.utils.MessageUtil;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
-import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.*;
@@ -32,16 +31,19 @@ public class ApplicationWebSocket {
         addOnlineCount();           //在线数加1
         System.out.println("有新连接加入！当前在线人数为" + getOnlineCount());
         this.session = session;
+        String json = MessageUtil.getMessNames(getNames());
+        //有人上线 重新把聊天列表推送给客户端
+        sendMessNames();
     }
 
     @OnMessage
-    public void onMessage(String text, Session session) {
+    public void onMessage(String text) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Message message = mapper.readValue(text, Message.class);
             String type = message.getType();
             String sendName = message.getSendName();
-            if (Objects.equals("setting", type)) {
+            if (Objects.equals("setting", type) && !Objects.equals(null, sendName)) {
                 setting(sendName);
             } else if (Objects.equals("在线群聊", message.getReceiveName())) {
                 sendMessageAll(sendName, message);
@@ -59,20 +61,26 @@ public class ApplicationWebSocket {
         System.out.println(sendName + "退出了聊天室!");
         ApplicationWebSocket.webSocket.remove(sendName);
         subOnlineCount();
+        //重新把聊天列表推送给客户端
+        sendMessNames();
     }
 
     public Set<String> getNames() {
         return webSocket.keySet();
     }
 
-    public void sendMessageAll(String jsonMessage) throws IOException {
-        Set<String> names = getNames();
-        for (String name : names) {
-            ApplicationWebSocket.webSocket.get(name).session.getBasicRemote().sendText(jsonMessage);
+    public void sendMessageAll(String jsonMessage)  {
+        try {
+            Set<String> names = getNames();
+            for (String name : names) {
+                ApplicationWebSocket.webSocket.get(name).session.getBasicRemote().sendText(jsonMessage);
+            }
+        }catch (IOException e){
+            e.printStackTrace();
         }
     }
 
-    public void sendMessageAll(String sendName, Message message) throws IOException {
+    public void sendMessageAll(String sendName, Message message) {
         Set<String> names = getNames();
         message.setText(message.getText().replaceAll("\n", "<br>"));
         String jsonMessage = JSON.toJSONString(message);
@@ -85,13 +93,15 @@ public class ApplicationWebSocket {
         ApplicationWebSocket.webSocket.get(toName).session.getBasicRemote().sendText(jsonMessage);
     }
 
-    public void setting(String sendName) throws IOException {
+    public void setting(String sendName) {
         this.sendName = sendName;
         ApplicationWebSocket.webSocket.put(sendName, this);
-        String json = MessageUtil.getMessageJSON(getNames());
+        sendMessNames();
+    }
+    public void sendMessNames(){
+        String json = MessageUtil.getMessNames(getNames());
         sendMessageAll(json);
     }
-
     public static synchronized int getOnlineCount() {
         return onlineCount.get();
     }
