@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:v-bind="http://xmlns.jcp.org/jsf/html">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>聊天室</title>
@@ -396,10 +396,10 @@
                 } else if (this.text.length < 0) {
                     return
                 } else {
-
+                    let type = this.receiveName == "在线群聊" ? "sendMessageAll" : "sendMessage";
                     let json = JSON.stringify({
                         text: this.text,
-                        type: "message",
+                        type: type,
                         receiveName: this.receiveName,
                         sendName: this.sendName,
                         url: this.url
