@@ -22,7 +22,7 @@
         }
 
         #app {
-            min-width: 1024px;
+           width: 1024px;
             min-height: 768px;
             background-color: #FFFFFF;
             box-shadow: 0 0 32px #ED1D40;
@@ -34,8 +34,8 @@
         }
 
         .sidebar {
-            display: grid;
-            grid-template-rows: auto 1fr;
+            position: relative;
+            height: 100%;
             background-color: #ED1D40;
             color: #FFFFFF;
         }
@@ -79,6 +79,11 @@
         }
 
         .list {
+            position: absolute;
+            top: 128px;
+            bottom: 0;
+            left: 0;
+            right: 0;
             overflow: auto;
             height: 656px;
         }
@@ -113,6 +118,7 @@
 
         .main {
             display: grid;
+            height: 100%;
             grid-template-rows: auto 1fr auto;
             background-color: #efefef;
         }
@@ -139,11 +145,17 @@
         }
 
         .main > .text > .input {
+            position: relative;
             padding: 8px;
             font-size: 16px;
             border: none;
             outline: none;
             resize: none;
+            overflow: auto;
+        }
+
+        .main > .text > .input * {
+            width: 80%;
         }
 
         .main > .text > .button {
@@ -156,47 +168,56 @@
             outline: none;
         }
 
-        .main > .messages {
+        .main > .container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main .messages {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
             list-style: none;
-            height: 624px;
             overflow: auto;
         }
 
-        .main > .messages > li {
+        .main .messages > li {
             display: flex;
         }
 
-        .main > .messages > li.self {
+        .main .messages > li.self {
             flex-direction: row-reverse;
         }
 
-        .main > .messages .avatar {
+        .main .messages .avatar {
             border-color: #F9465C;
         }
 
-        .main > .messages .avatar.mt {
+        .main .messages .avatar.mt {
             margin-top: 16px;
         }
 
-        .main > .messages > li.self .avatar {
+        .main .messages > li.self .avatar {
             flex-direction: row-reverse;
             margin: 0 0 0 16px;
         }
 
-        .main > .messages .content {
+        .main .messages .content {
             margin: 16px;
             display: flex;
         }
 
-        .main > .messages .sendName {
+        .main .messages .sendName {
             line-height: 32px;
         }
 
-        .main > .messages > li.self > .content {
+        .main .messages > li.self > .content {
             flex-direction: row-reverse;
         }
 
-        .main > .messages .text {
+        .main .messages .text {
             position: relative;
             max-width: 384px;
             padding: 16px;
@@ -204,14 +225,44 @@
             background-color: #FFFFFF;
         }
 
-        .main > .messages .text * {
+        .main .messages .text * {
             width: 100%;
         }
 
-        .main > .messages > li.self .text {
+        .main .messages > li.self .text {
             border-radius: 16px 0 16px 16px;
             background-color: #F9465C;
             color: #FFFFFF;
+        }
+
+        .return {
+            display: none;
+        }
+
+        @media only screen and (max-width: 1024px) {
+            #app {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+            }
+        }
+
+        @media only screen and (max-width: 640px) {
+            #app {
+                display: block;
+            }
+
+            .close {
+                display: none;
+            }
+
+            .return {
+                display: inline;
+                font-size: 24px;
+                font-weight: bolder;
+                padding: 0 16px;
+                float: left;
+            }
         }
     </style>
 </head>
@@ -220,7 +271,7 @@
 <!-- 总页面 -->
 <div id="app">
     <!-- 显示个人信息 + 在线信息列表 -->
-    <div class="sidebar">
+    <div class="sidebar" :class="{close: !userListOpen}">
         <!-- 显示个人信息 -->
         <div class="card">
             <header>
@@ -251,37 +302,41 @@
         </div>
     </div>
     <!-- 聊天页面 -->
-    <div class="main">
+    <div class="main" :class="{close: userListOpen}">
         <!-- 发送人 -->
         <div class="title">
+            <span class="return" @click="() => {userListOpen = true, receiveName = ''}"><</span>
             {{receiveName}}
         </div>
 
         <!-- 聊天消息 -->
-        <ul class="messages" id="scrollIV">
-            <li v-for="item of message" :class="{ self: item.sendName == sendName}">
-                <p class="time" v-if="false">
-                    <span>{{item.createDate}}</span>
-                </p>
-                <div class="content">
-                    <img class="avatar" :class="{mt: item.receiveName == '在线群聊'}" :src="item.url">
-                    <div>
-                        <p class="sendName" v-if="item.receiveName == '在线群聊' && item.sendName != sendName">
-                            {{item.sendName}}</p>
-                        <div class="text" v-html="item.text"></div>
+        <div class="container">
+            <ul class="messages" id="scrollIV">
+                <li v-for="item of message" :class="{ self: item.sendName == sendName}">
+                    <p class="time" v-if="false">
+                        <span>{{item.createDate}}</span>
+                    </p>
+                    <div class="content">
+                        <img class="avatar" :class="{mt: item.receiveName == '在线群聊'}" :src="item.url">
+                        <div>
+                            <p class="sendName" v-if="item.receiveName == '在线群聊' && item.sendName != sendName">
+                                {{item.sendName}}</p>
+                            <div class="text" v-html="item.text"></div>
+                        </div>
                     </div>
-                </div>
-            </li>
-        </ul>
+                </li>
+            </ul>
+        </div>
 
         <!-- 消息发送组件 -->
         <div class="text">
             <div
+                    id="send"
                     contenteditable="true"
                     class="input"
                     placeholder="按 Ctrl + Enter 发送"
                     @input="edit($event)"
-                    @keyup.ctrl.enter="send($event)">
+                    @keyup.ctrl.enter="send()">
             </div>
             <button class="button" @click="send()">发送</button>
         </div>
@@ -308,7 +363,8 @@
             text: '',
             userCount: [],
             searchVal: '',
-            url: ''
+            url: '',
+            userListOpen: true
         },
         mounted() {
             this.sendName = $.cookie("sendName")
@@ -381,7 +437,7 @@
                 store.set(sendName, {message: messageList});
 
             },
-            send(event) {
+            send() {
                 if (this.sendName == "" || this.sendName == null) {
                     alert("请设置昵称")
                     this.sendName = prompt("昵称：");
@@ -410,13 +466,14 @@
                         this.message.push(JSON.parse(json))
                     }
                     store.set(this.receiveName, {message: this.message});
-                    event.target.innerHTML = "";
+                    document.getElementById("send").innerHTML = "";
                 }
             },
             close() {
                 console.log("socket连接关闭")
             },
             onAcquireName: function (name) {
+                this.userListOpen = false;
                 this.receiveName = name
                 this.message = []
                 let chat = store.get(this.receiveName);
@@ -441,10 +498,6 @@
                 if (file != null && this.sendName != null) {
                     document.forms['upload'].submit()
                 }
-            },
-            nextLine(event) {
-                console.log("next line");
-                this.text += "\n";
             },
             edit(event) {
                 this.text = event.target.innerHTML;
