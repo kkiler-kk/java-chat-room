@@ -50,10 +50,13 @@ public class ApplicationWebSocket {
     @OnClose
     public void onClose() {
         System.out.println(sendName + "退出了聊天室!");
-        ApplicationWebSocket.webSocket.remove(sendName);
+        if(sendName != null){
+            ApplicationWebSocket.webSocket.remove(sendName);
+        }
         subOnlineCount();
         //重新把聊天列表推送给客户端
         sendMessNames();
+        StringBuilder stringBuilder = new StringBuilder();
     }
 
     public Set<String> getNames() {
