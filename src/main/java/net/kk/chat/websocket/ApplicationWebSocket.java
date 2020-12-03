@@ -2,6 +2,7 @@ package net.kk.chat.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.bytebuddy.implementation.bytecode.Throw;
 import net.kk.chat.utils.MessageUtil;
 import org.springframework.stereotype.Component;
 
@@ -57,6 +58,11 @@ public class ApplicationWebSocket {
         //重新把聊天列表推送给客户端
         sendMessNames();
         StringBuilder stringBuilder = new StringBuilder();
+    }
+    @OnError
+    public void onError(Throwable throwable){
+        System.out.println("发生错误");
+        throwable.printStackTrace();
     }
 
     public Set<String> getNames() {
