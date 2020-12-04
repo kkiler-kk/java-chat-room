@@ -192,7 +192,12 @@
             list-style: none;
             overflow: auto;
         }
+        .main .messages .time {
+            text-align: center;
+            color: #848484;
+        }
         .main .messages > li {
+            position: relative;
             display: -webkit-box;
             display: -ms-flexbox;
             display: flex;
@@ -319,19 +324,21 @@
         <!-- 聊天消息 -->
         <div class="container">
             <ul class="messages" id="scrollIV">
-                <li v-for="item of message" :class="{ self: item.sendName == sendName}">
-                    <p class="time" v-if="false">
+                <template v-for="item of message">
+                    <p class="time" v-if="item.createDate">
                         <span>{{item.createDate}}</span>
                     </p>
-                    <div class="content">
-                        <img class="avatar" :class="{mt: item.receiveName == '在线群聊'}" :src="item.url">
-                        <div>
-                            <p class="sendName" v-if="item.receiveName == '在线群聊' && item.sendName != sendName">
-                                {{item.sendName}}</p>
-                            <div class="text" v-html="item.text"></div>
+                    <li :class="{ self: item.sendName == sendName}">
+                        <div class="content">
+                            <img class="avatar" :class="{mt: item.receiveName == '在线群聊'}" :src="item.url">
+                            <div>
+                                <p class="sendName" v-if="item.receiveName == '在线群聊' && item.sendName != sendName">
+                                    {{item.sendName}}</p>
+                                <div class="text" v-html="item.text"></div>
+                            </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
+                </template>
             </ul>
         </div>
 
@@ -359,6 +366,38 @@
 <script src="dist/js/jquery.js"></script>
 <script src="dist/js/jquery.cookie.js"></script>
 <script>
+    class Stopwatch {
+        constructor() {
+            this.reset();
+        }
+
+        reset() {
+            let result = this.date;
+            this.date = new Date();
+            return this.date;
+        }
+
+        elapseTime() {
+            return new Date() - this.date;
+        }
+    }
+
+    Date.prototype.format = function (fmt) {
+        var o = {
+            "M+": this.getMonth() + 1, //月份
+            "d+": this.getDate(), //日
+            "h+": this.getHours(), //小时
+            "m+": this.getMinutes(), //分
+            "s+": this.getSeconds(), //秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+            "S": this.getMilliseconds() //毫秒
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+
     const app = new Vue({
         el: '#app',
         data: {
@@ -371,7 +410,8 @@
             userCount: [],
             searchVal: '',
             url: '',
-            userListOpen: true
+            userListOpen: true,
+            time: new Stopwatch()
         },
         mounted() {
             this.sendName = $.cookie("sendName")
@@ -460,12 +500,15 @@
                     return
                 } else {
                     let type = this.receiveName == "在线群聊" ? "sendMessageAll" : "sendMessage";
+                    let createDate = this.time.elapseTime() > 5 * 60 * 1000 ? this.time.reset() : null;
+                    console.log(createDate);
                     let json = JSON.stringify({
                         text: this.text,
                         type: type,
                         receiveName: this.receiveName,
                         sendName: this.sendName,
-                        url: this.url
+                        url: this.url,
+                        createDate: createDate ? createDate.format("yyyy-M-d h:m:s") : null
                     })
                     this.socket.send(json)
                     this.text = ""
@@ -474,6 +517,7 @@
                     }
                     store.set(this.receiveName, {message: this.message});
                     document.getElementById("send").innerHTML = "";
+                    this.nextTick();
                 }
             },
             close() {
