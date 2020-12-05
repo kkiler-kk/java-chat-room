@@ -165,10 +165,7 @@ const app = new Vue({
             } else {
                 store.set(this.receiveName, {message: this.message})
             }
-            this.$nextTick(function () {
-                let elementById = document.getElementById("scrollIV");
-                elementById.scrollTop = elementById.scrollHeight;
-            })
+            this.nextTick()
         },
         nextTick() {
             this.$nextTick(function () {
