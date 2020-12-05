@@ -91,7 +91,10 @@ const app = new Vue({
                     messageList.push(parse)
                 }
                 store.set("在线群聊", {message: messageList});
-                this.nextTick()
+                this.$nextTick(function (){
+                    let elementById = document.getElementById("scrollIV");
+                    elementById.scrollTop = elementById.scrollHeight;
+                })
                 return;
             } else if (parse.receiveName == "在线群聊" && this.receiveName != parse.receiveName) {
                 let chatData = store.get("在线群聊")
@@ -104,7 +107,10 @@ const app = new Vue({
                 this.nextTick()
                 return;
             }
-            this.nextTick()
+            this.$nextTick(function (){
+                let elementById = document.getElementById("scrollIV");
+                elementById.scrollTop = elementById.scrollHeight;
+            })
             let sendName = parse.sendName;
             if (this.sendName == sendName) return;
             let messageList = [];
@@ -149,7 +155,10 @@ const app = new Vue({
                 }
                 store.set(this.receiveName, {message: this.message});
                 document.getElementById("send").innerHTML = "";
-                this.nextTick();
+                this.$nextTick(function (){
+                    let elementById = document.getElementById("scrollIV");
+                    elementById.scrollTop = elementById.scrollHeight;
+                })
             }
         },
         close() {
@@ -165,10 +174,7 @@ const app = new Vue({
             } else {
                 store.set(this.receiveName, {message: this.message})
             }
-            this.nextTick()
-        },
-        nextTick() {
-            this.$nextTick(function () {
+            this.$nextTick(function (){
                 let elementById = document.getElementById("scrollIV");
                 elementById.scrollTop = elementById.scrollHeight;
             })
