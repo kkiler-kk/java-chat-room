@@ -37,7 +37,7 @@ public class MessageUtil {
                     restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
             return responseEntity.getBody();
         }catch (Exception ex){
-            //进行错误处理
+            ex.printStackTrace();
         }
         return "";
     }

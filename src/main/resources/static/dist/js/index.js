@@ -81,8 +81,6 @@ const app = new Vue({
                 this.userCount = parse.userCount
                 return
             } else if(parse.receiveName == "机器人"){
-                parse.url = "dist/images/robot.png";
-                parse.sendName = "机器人";
                 this.message.push(parse);
             }else if (parse.sendName == this.receiveName && parse.receiveName != "在线群聊" && parse.sendName != this.sendName) {
                 this.message.push(parse)

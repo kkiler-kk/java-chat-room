@@ -94,9 +94,11 @@ public class ApplicationWebSocket {
         message.setUrl("dist/images/robot.png");
         String result = MessageUtil.sendGetRequest(URL);
         result = result.substring(23, result.length() -2);
+        String toName = message.getSendName();
+        message.setSendName("机器人");
         message.setText(result);
         String jsonMessage = JSON.toJSONString(message);
-        ApplicationWebSocket.webSocket.get(message.getSendName()).session.getBasicRemote().sendText(jsonMessage);
+        ApplicationWebSocket.webSocket.get(toName).session.getBasicRemote().sendText(jsonMessage);
     }
 
     public void setting(Message message) {
