@@ -63,7 +63,7 @@
                     </p>
                     <li :class="{ self: item.sendName == sendName}">
                         <div class="content">
-                            <img class="avatar" :class="{mt: item.receiveName == '在线群聊'}" :src="item.url">
+                            <img class="avatar" :class="{mt: item.receiveName == '在线群聊'}" :src="item.url" @dblclick="() => { if (item.sendName != sendName) receiveName = item.receiveName; }">
                             <div>
                                 <p class="sendName" v-if="item.receiveName == '在线群聊' && item.sendName != sendName">
                                     {{item.sendName}}</p>
