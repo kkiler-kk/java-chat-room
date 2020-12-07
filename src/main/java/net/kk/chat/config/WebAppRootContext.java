@@ -1,4 +1,4 @@
-package net.kk.chat.utils;
+package net.kk.chat.config;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletContextInitializer;

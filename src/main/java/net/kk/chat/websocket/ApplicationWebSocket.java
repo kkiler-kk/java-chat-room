@@ -2,7 +2,6 @@ package net.kk.chat.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.bytebuddy.implementation.bytecode.Throw;
 import net.kk.chat.utils.MessageUtil;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +41,7 @@ public class ApplicationWebSocket {
             ObjectMapper mapper = new ObjectMapper();
             Message message = mapper.readValue(text, Message.class);
             String type = message.getType();
+            System.out.println("type = " + type);
             Method method = this.getClass().getDeclaredMethod(type, Message.class);
             method.invoke(this, message);
         } catch (Exception e) {
@@ -55,9 +55,7 @@ public class ApplicationWebSocket {
             ApplicationWebSocket.webSocket.remove(sendName);
         }
         subOnlineCount();
-        //重新把聊天列表推送给客户端
         sendMessNames();
-        StringBuilder stringBuilder = new StringBuilder();
     }
     @OnError
     public void onError(Throwable throwable){
@@ -90,6 +88,15 @@ public class ApplicationWebSocket {
         message.setText(message.getText().replaceAll("\n", "<br>"));
         String jsonMessage = JSON.toJSONString(message);
         ApplicationWebSocket.webSocket.get(message.getReceiveName()).session.getBasicRemote().sendText(jsonMessage);
+    }
+    public void sendRobot(Message message) throws IOException {
+        final String URL = "http://api.qingyunke.com/api.php?key=free&appid=0&msg=" + message.getText();
+        message.setUrl("dist/images/robot.png");
+        String result = MessageUtil.sendGetRequest(URL);
+        result = result.substring(23, result.length() -2);
+        message.setText(result);
+        String jsonMessage = JSON.toJSONString(message);
+        ApplicationWebSocket.webSocket.get(message.getSendName()).session.getBasicRemote().sendText(jsonMessage);
     }
 
     public void setting(Message message) {

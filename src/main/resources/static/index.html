@@ -29,6 +29,11 @@
                     <img src="dist/images/all.png" class="avatar" alt="">
                     <p class="name">在线群聊</p>
                 </li>
+
+                <li @click="onAcquireName('机器人')" :class="{active: '机器人' == receiveName}">
+                    <img src="dist/images/robot.png" class="avatar" alt="">
+                    <p class="name">机器人</p>
+                </li>
                 <li
                         v-for="user of searchList"
                         :class="{active: user.name == receiveName}"
@@ -76,7 +81,6 @@
                     id="send"
                     contenteditable="true"
                     class="input"
-                    placeholder="按 Ctrl + Enter 发送"
                     @input="edit($event)"
                     @keyup.ctrl.enter="send()">
             </div>

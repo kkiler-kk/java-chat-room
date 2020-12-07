@@ -80,7 +80,11 @@ const app = new Vue({
             if (parse.type == "userCount") {
                 this.userCount = parse.userCount
                 return
-            } else if (parse.sendName == this.receiveName && parse.receiveName != "在线群聊" && parse.sendName != this.sendName) {
+            } else if(parse.receiveName == "机器人"){
+                parse.url = "dist/images/robot.png";
+                parse.sendName = "机器人";
+                this.message.push(parse);
+            }else if (parse.sendName == this.receiveName && parse.receiveName != "在线群聊" && parse.sendName != this.sendName) {
                 this.message.push(parse)
             } else if (parse.receiveName == "在线群聊" && this.receiveName == parse.receiveName) {
                 this.message.push(parse)
@@ -137,7 +141,8 @@ const app = new Vue({
             } else if (this.text.length < 0) {
                 return
             } else {
-                let type = this.receiveName == "在线群聊" ? "sendMessageAll" : "sendMessage";
+                let type = this.receiveName == "在线群聊" ? "sendMessageAll" : this.receiveName == "机器人" ? "sendRobot" : "sendMessage";
+                console.log(this.receiveName == "机器人")
                 let createDate = this.time.elapseTime() > 5 * 60 * 1000 ? this.time.reset() : null;
                 console.log(createDate);
                 let json = JSON.stringify({
@@ -153,6 +158,7 @@ const app = new Vue({
                 if (this.receiveName != "在线群聊") {
                     this.message.push(JSON.parse(json))
                 }
+                console.log(json)
                 store.set(this.receiveName, {message: this.message});
                 document.getElementById("send").innerHTML = "";
                 this.$nextTick(function (){
