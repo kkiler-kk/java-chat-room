@@ -31,7 +31,9 @@
     </select>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d306a594-fde6-4c29-bf67-231d5210a775" name="Default Changelist" comment="style" />
+    <list default="true" id="d306a594-fde6-4c29-bf67-231d5210a775" name="Default Changelist" comment="style">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -56,6 +58,7 @@
       </GitPushTagMode>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
@@ -75,7 +78,6 @@
     <property name="RequestMappingsPanelWidth1" value="75" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
@@ -166,7 +168,7 @@
       <workItem from="1607417380004" duration="74000" />
       <workItem from="1607418174192" duration="744000" />
       <workItem from="1607431756681" duration="493000" />
-      <workItem from="1607432271917" duration="138000" />
+      <workItem from="1607432271917" duration="445000" />
     </task>
     <task id="LOCAL-00001" summary="KK">
       <created>1606128276239</created>
@@ -329,7 +331,21 @@
       <option name="project" value="LOCAL" />
       <updated>1607394996577</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="style">
+      <created>1607432540856</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1607432540856</updated>
+    </task>
+    <task id="LOCAL-00025" summary="style">
+      <created>1607432715350</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1607432715350</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -476,17 +492,18 @@
     </state>
     <state x="389" y="183" key="SettingsEditor/0.0.1856.1080@0.0.1856.1080" timestamp="1606722721593" />
     <state x="614" y="243" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1607432054273" />
-    <state x="558" y="240" key="Vcs.Push.Dialog.v2" timestamp="1607432184886">
+    <state x="558" y="240" key="Vcs.Push.Dialog.v2" timestamp="1607432716456">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="539" y="249" key="Vcs.Push.Dialog.v2/0.0.1854.1080@0.0.1854.1080" timestamp="1606222059828" />
     <state x="540" y="249" key="Vcs.Push.Dialog.v2/0.0.1856.1080@0.0.1856.1080" timestamp="1606722829401" />
     <state x="540" y="249" key="Vcs.Push.Dialog.v2/0.0.1857.1080@0.0.1857.1080" timestamp="1607000885901" />
-    <state x="558" y="240" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1607432184886" />
-    <state x="696" y="494" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1606986550922">
-      <screen x="0" y="0" width="1857" height="1080" />
+    <state x="558" y="240" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1607432716456" />
+    <state x="720" y="476" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1607432447611">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="696" y="494" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1857.1080@0.0.1857.1080" timestamp="1606986550922" />
+    <state x="720" y="476" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1040@0.0.1920.1040" timestamp="1607432447611" />
     <state x="667" y="298" key="git4idea.merge.GitPullDialog" timestamp="1606128777665">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
