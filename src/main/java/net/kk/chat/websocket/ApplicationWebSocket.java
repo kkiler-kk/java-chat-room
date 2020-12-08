@@ -41,7 +41,6 @@ public class ApplicationWebSocket {
             ObjectMapper mapper = new ObjectMapper();
             Message message = mapper.readValue(text, Message.class);
             String type = message.getType();
-            System.out.println("type = " + type);
             Method method = this.getClass().getDeclaredMethod(type, Message.class);
             method.invoke(this, message);
         } catch (Exception e) {
