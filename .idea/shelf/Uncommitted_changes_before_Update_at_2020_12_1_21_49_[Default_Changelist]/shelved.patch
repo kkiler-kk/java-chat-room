@@ -1,0 +1,180 @@
+Index: src/main/java/net/kk/chat/websocket/ApplicationWebSocket.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package net.kk.chat.websocket;\r\n\r\nimport com.alibaba.fastjson.JSON;\r\nimport com.fasterxml.jackson.databind.ObjectMapper;\r\nimport net.kk.chat.entity.Message;\r\nimport net.kk.chat.utils.MessageUtil;\r\nimport org.springframework.stereotype.Component;\r\n\r\nimport javax.websocket.*;\r\nimport javax.websocket.Session;\r\nimport javax.websocket.server.ServerEndpoint;\r\nimport java.io.IOException;\r\nimport java.util.*;\r\nimport java.util.concurrent.ConcurrentHashMap;\r\nimport java.util.concurrent.atomic.AtomicInteger;\r\n\r\n\r\n/**\r\n * @author KK\r\n * @create 2020-08-16\r\n */\r\n@ServerEndpoint(value = \"/websocket\")\r\n@Component\r\npublic class ApplicationWebSocket {\r\n    private static AtomicInteger onlineCount = new AtomicInteger(0);\r\n    private static Map<String, ApplicationWebSocket> webSocket = new ConcurrentHashMap<>(); //存储在线人数\r\n    private Session session;\r\n    private String sendName;\r\n\r\n    @OnOpen\r\n    public void onOpen(Session session) {\r\n        addOnlineCount();           //在线数加1\r\n        System.out.println(\"有新连接加入！当前在线人数为\" + getOnlineCount());\r\n        this.session = session;\r\n    }\r\n\r\n    @OnMessage\r\n    public void onMessage(String text, Session session) {\r\n        try {\r\n            ObjectMapper mapper = new ObjectMapper();\r\n            Message message = mapper.readValue(text, Message.class);\r\n            String type = message.getType();\r\n            String sendName = message.getSendName();\r\n            if (Objects.equals(\"setting\", type)) {\r\n                setting(sendName);\r\n            } else if (Objects.equals(\"在线群聊\", message.getReceiveName())) {\r\n                sendMessageAll(sendName, message);\r\n            } else {\r\n                String toName = message.getReceiveName();\r\n                sendMessage(toName, sendName, message);\r\n            }\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n\r\n    @OnClose\r\n    public void onClose() {\r\n        System.out.println(sendName + \"退出了聊天室!\");\r\n        ApplicationWebSocket.webSocket.remove(sendName);\r\n        subOnlineCount();\r\n    }\r\n\r\n    public Set<String> getNames() {\r\n        return webSocket.keySet();\r\n    }\r\n\r\n    public void sendMessageAll(String jsonMessage) throws IOException {\r\n        Set<String> names = getNames();\r\n        for (String name : names) {\r\n            ApplicationWebSocket.webSocket.get(name).session.getBasicRemote().sendText(jsonMessage);\r\n        }\r\n    }\r\n\r\n    public void sendMessageAll(String sendName, Message message) throws IOException {\r\n        Set<String> names = getNames();\r\n        message.setText(message.getText().replaceAll(\"\\n\", \"<br>\"));\r\n        String jsonMessage = JSON.toJSONString(message);\r\n        sendMessageAll(jsonMessage);\r\n    }\r\n\r\n    public void sendMessage(String toName, String sendName, Message message) throws IOException {\r\n        message.setText(message.getText().replaceAll(\"\\n\", \"<br>\"));\r\n        String jsonMessage = JSON.toJSONString(message);\r\n        ApplicationWebSocket.webSocket.get(toName).session.getBasicRemote().sendText(jsonMessage);\r\n    }\r\n\r\n    public void setting(String sendName) throws IOException {\r\n        this.sendName = sendName;\r\n        ApplicationWebSocket.webSocket.put(sendName, this);\r\n        String json = MessageUtil.getMessageJSON(getNames());\r\n        sendMessageAll(json);\r\n    }\r\n\r\n    public static synchronized int getOnlineCount() {\r\n        return onlineCount.get();\r\n    }\r\n\r\n    public static synchronized void addOnlineCount() {\r\n        ApplicationWebSocket.onlineCount.getAndIncrement();\r\n    }\r\n\r\n    public static synchronized void subOnlineCount() {\r\n        ApplicationWebSocket.onlineCount.getAndDecrement();\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/net/kk/chat/websocket/ApplicationWebSocket.java	(revision ed252b9aa1eb7f5d4149c766a45fdfd150a7178b)
++++ src/main/java/net/kk/chat/websocket/ApplicationWebSocket.java	(date 1606829728518)
+@@ -7,7 +7,6 @@
+ import org.springframework.stereotype.Component;
+ 
+ import javax.websocket.*;
+-import javax.websocket.Session;
+ import javax.websocket.server.ServerEndpoint;
+ import java.io.IOException;
+ import java.util.*;
+@@ -32,16 +31,19 @@
+         addOnlineCount();           //在线数加1
+         System.out.println("有新连接加入！当前在线人数为" + getOnlineCount());
+         this.session = session;
++        String json = MessageUtil.getMessNames(getNames());
++        //有人上线 重新把聊天列表推送给客户端
++        sendMessNames();
+     }
+ 
+     @OnMessage
+-    public void onMessage(String text, Session session) {
++    public void onMessage(String text) {
+         try {
+             ObjectMapper mapper = new ObjectMapper();
+             Message message = mapper.readValue(text, Message.class);
+             String type = message.getType();
+             String sendName = message.getSendName();
+-            if (Objects.equals("setting", type)) {
++            if (Objects.equals("setting", type) && !Objects.equals(null, sendName)) {
+                 setting(sendName);
+             } else if (Objects.equals("在线群聊", message.getReceiveName())) {
+                 sendMessageAll(sendName, message);
+@@ -59,20 +61,26 @@
+         System.out.println(sendName + "退出了聊天室!");
+         ApplicationWebSocket.webSocket.remove(sendName);
+         subOnlineCount();
++        //重新把聊天列表推送给客户端
++        sendMessNames();
+     }
+ 
+     public Set<String> getNames() {
+         return webSocket.keySet();
+     }
+ 
+-    public void sendMessageAll(String jsonMessage) throws IOException {
+-        Set<String> names = getNames();
+-        for (String name : names) {
+-            ApplicationWebSocket.webSocket.get(name).session.getBasicRemote().sendText(jsonMessage);
++    public void sendMessageAll(String jsonMessage)  {
++        try {
++            Set<String> names = getNames();
++            for (String name : names) {
++                ApplicationWebSocket.webSocket.get(name).session.getBasicRemote().sendText(jsonMessage);
++            }
++        }catch (IOException e){
++            e.printStackTrace();
+         }
+     }
+ 
+-    public void sendMessageAll(String sendName, Message message) throws IOException {
++    public void sendMessageAll(String sendName, Message message) {
+         Set<String> names = getNames();
+         message.setText(message.getText().replaceAll("\n", "<br>"));
+         String jsonMessage = JSON.toJSONString(message);
+@@ -85,13 +93,15 @@
+         ApplicationWebSocket.webSocket.get(toName).session.getBasicRemote().sendText(jsonMessage);
+     }
+ 
+-    public void setting(String sendName) throws IOException {
++    public void setting(String sendName) {
+         this.sendName = sendName;
+         ApplicationWebSocket.webSocket.put(sendName, this);
+-        String json = MessageUtil.getMessageJSON(getNames());
++        sendMessNames();
++    }
++    public void sendMessNames(){
++        String json = MessageUtil.getMessNames(getNames());
+         sendMessageAll(json);
+     }
+-
+     public static synchronized int getOnlineCount() {
+         return onlineCount.get();
+     }
+Index: src/main/java/net/kk/chat/utils/MessageUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package net.kk.chat.utils;\r\n\r\nimport java.util.Set;\r\n\r\npublic class MessageUtil {\r\n    public static String getMessageJSON(Set<String> names) {\r\n        StringBuilder builder = new StringBuilder(\"{\\\"userCount\\\":[\");\r\n        for (String name : names) {\r\n            builder.append(\"{\\\"name\\\":\\\"\").append(name + \"\\\",\").append(\"\\\"url\\\":\\\"\").append(\"/upload/\" + name + \".jpg\\\"},\");\r\n        }\r\n        builder.deleteCharAt(builder.length() - 1);\r\n        builder.append(\"],\\\"type\\\": \\\"userCount\\\"}\");\r\n        return builder.toString();\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/net/kk/chat/utils/MessageUtil.java	(revision ed252b9aa1eb7f5d4149c766a45fdfd150a7178b)
++++ src/main/java/net/kk/chat/utils/MessageUtil.java	(date 1606822518304)
+@@ -3,7 +3,7 @@
+ import java.util.Set;
+ 
+ public class MessageUtil {
+-    public static String getMessageJSON(Set<String> names) {
++    public static String getMessNames(Set<String> names) {
+         StringBuilder builder = new StringBuilder("{\"userCount\":[");
+         for (String name : names) {
+             builder.append("{\"name\":\"").append(name + "\",").append("\"url\":\"").append("/upload/" + name + ".jpg\"},");
+Index: src/main/java/net/kk/chat/config/WebSocketConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package net.kk.chat.config;\r\n\r\nimport org.springframework.context.annotation.Bean;\r\nimport org.springframework.context.annotation.Configuration;\r\nimport org.springframework.web.socket.server.standard.ServerEndpointExporter;\r\n\r\n/**\r\n * @author: Huanglei\r\n * @date: 2020/6/15\r\n */\r\n@Configuration\r\npublic class WebSocketConfig {\r\n    @Bean\r\n    public ServerEndpointExporter serverEndpointExporter() {\r\n        return new ServerEndpointExporter();\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/net/kk/chat/config/WebSocketConfig.java	(revision ed252b9aa1eb7f5d4149c766a45fdfd150a7178b)
++++ src/main/java/net/kk/chat/config/WebSocketConfig.java	(date 1606823248298)
+@@ -5,8 +5,8 @@
+ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+ 
+ /**
+- * @author: Huanglei
+- * @date: 2020/6/15
++ * @author: KK
++ * @date: 2020/8/15
+  */
+ @Configuration
+ public class WebSocketConfig {
+Index: target/classes/application.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>server.port=8080\r\n## MULTIPART (MultipartProperties)\r\n# 开启 multipart 上传功能\r\nspring.servlet.multipart.enabled=true\r\n# 文件写入磁盘的阈值\r\nspring.servlet.multipart.file-size-threshold=2KB\r\n# 最大文件大小\r\nspring.servlet.multipart.max-file-size=5MB\r\n# 最大请求大小\r\nspring.servlet.multipart.max-request-size=10MB\r\n\r\n## 文件存储所需参数\r\n# 所有通过 REST APIs 上传的文件都将存储在此目录下\r\nfile.upload-dir=./uploads\r\n#静态资源对外暴露的访问路径\r\nfile.staticAccessPath=/upload/**\r\n#解决配置js/css/img缓存问题\r\nspring.resources.chain.strategy.content.enabled=true\r\nspring.resources.chain.strategy.content.paths=/dist/**,upload/**
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- target/classes/application.properties	(revision ed252b9aa1eb7f5d4149c766a45fdfd150a7178b)
++++ target/classes/application.properties	(date 1606822241686)
+@@ -8,12 +8,8 @@
+ spring.servlet.multipart.max-file-size=5MB
+ # 最大请求大小
+ spring.servlet.multipart.max-request-size=10MB
+-
+-## 文件存储所需参数
+-# 所有通过 REST APIs 上传的文件都将存储在此目录下
+-file.upload-dir=./uploads
+-#静态资源对外暴露的访问路径
++## 暴力在外的路径
+ file.staticAccessPath=/upload/**
+ #解决配置js/css/img缓存问题
+ spring.resources.chain.strategy.content.enabled=true
+-spring.resources.chain.strategy.content.paths=/dist/**,upload/**
+\ No newline at end of file
++spring.resources.chain.strategy.content.paths=/dist/**,/upload/**
+\ No newline at end of file
+Index: src/main/resources/application.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>server.port=8080\r\n## MULTIPART (MultipartProperties)\r\n# 开启 multipart 上传功能\r\nspring.servlet.multipart.enabled=true\r\n# 文件写入磁盘的阈值\r\nspring.servlet.multipart.file-size-threshold=2KB\r\n# 最大文件大小\r\nspring.servlet.multipart.max-file-size=5MB\r\n# 最大请求大小\r\nspring.servlet.multipart.max-request-size=10MB\r\n\r\n## 文件存储所需参数\r\n# 所有通过 REST APIs 上传的文件都将存储在此目录下\r\nfile.upload-dir=./uploads\r\n#静态资源对外暴露的访问路径\r\nfile.staticAccessPath=/upload/**\r\n#解决配置js/css/img缓存问题\r\nspring.resources.chain.strategy.content.enabled=true\r\nspring.resources.chain.strategy.content.paths=/dist/**,upload/**
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/application.properties	(revision ed252b9aa1eb7f5d4149c766a45fdfd150a7178b)
++++ src/main/resources/application.properties	(date 1606820921551)
+@@ -8,12 +8,8 @@
+ spring.servlet.multipart.max-file-size=5MB
+ # 最大请求大小
+ spring.servlet.multipart.max-request-size=10MB
+-
+-## 文件存储所需参数
+-# 所有通过 REST APIs 上传的文件都将存储在此目录下
+-file.upload-dir=./uploads
+-#静态资源对外暴露的访问路径
++## 暴力在外的路径
+ file.staticAccessPath=/upload/**
+ #解决配置js/css/img缓存问题
+ spring.resources.chain.strategy.content.enabled=true
+-spring.resources.chain.strategy.content.paths=/dist/**,upload/**
+\ No newline at end of file
++spring.resources.chain.strategy.content.paths=/dist/**,/upload/**
+\ No newline at end of file
