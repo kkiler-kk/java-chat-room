@@ -21,11 +21,16 @@ import net.kk.chat.entity.Message;
 @ServerEndpoint(value = "/websocket")
 @Component
 public class ApplicationWebSocket {
+    //用户记录当前在线人数
     private static final AtomicInteger onlineCount = new AtomicInteger(0);
-    private static final Map<String, ApplicationWebSocket> webSocket = new ConcurrentHashMap<>(); //存储在线人数
+    //存储在线人数 key 存储用户名 value 存储每个客户端对应的websocket
+    private static final Map<String, ApplicationWebSocket> webSocket = new ConcurrentHashMap<>();
     private Session session;
     private String sendName;
 
+    /**
+     * 当有新连接加入时触发
+     */
     @OnOpen
     public void onOpen(Session session) {
         addOnlineCount();           //在线数加1
@@ -35,6 +40,10 @@ public class ApplicationWebSocket {
         sendMessNames();
     }
 
+    /**
+     * 当客户端给服务端发送消息时候触发
+     * @param text json字符串
+     */
     @OnMessage
     public void onMessage(String text) {
         try {
@@ -47,6 +56,10 @@ public class ApplicationWebSocket {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 客户端关闭的时候触发
+     */
     @OnClose
     public void onClose() {
         System.out.println(sendName + "退出了聊天室!");
@@ -56,12 +69,19 @@ public class ApplicationWebSocket {
         subOnlineCount();
         sendMessNames();
     }
+
+    /**
+     * 发生错误的时候触发
+     */
     @OnError
     public void onError(Throwable throwable){
         System.out.println("发生错误");
         throwable.printStackTrace();
     }
 
+    /**
+     * 返回所有用户名
+     */
     public Set<String> getNames() {
         return webSocket.keySet();
     }
@@ -77,17 +97,27 @@ public class ApplicationWebSocket {
         }
     }
 
+    /**
+     * 给所有客户端推送消息
+     */
     public void sendMessageAll( Message message) {
         message.setText(message.getText().replaceAll("\n", "<br>"));
         String jsonMessage = JSON.toJSONString(message);
         sendMessageAll(jsonMessage);
     }
 
+    /**
+     * 单独给一位客户端推送消息
+     */
     public void sendMessage(Message message) throws IOException {
         message.setText(message.getText().replaceAll("\n", "<br>"));
         String jsonMessage = JSON.toJSONString(message);
         ApplicationWebSocket.webSocket.get(message.getReceiveName()).session.getBasicRemote().sendText(jsonMessage);
     }
+
+    /**
+     * 机器人
+     */
     public void sendRobot(Message message) throws IOException {
         final String URL = "http://api.qingyunke.com/api.php?key=free&appid=0&msg=" + message.getText();
         message.setUrl("dist/images/robot.png");
@@ -100,12 +130,19 @@ public class ApplicationWebSocket {
         ApplicationWebSocket.webSocket.get(toName).session.getBasicRemote().sendText(jsonMessage);
     }
 
+    /**
+     * 设置客户端name 和实例化 websocket对象
+     */
     public void setting(Message message) {
         if(Objects.equals(null, message.getSendName())) return;
         this.sendName = message.getSendName();
         ApplicationWebSocket.webSocket.put(this.sendName, this);
         sendMessNames();
     }
+
+    /**
+     * 推送所有客户端 在线的用户
+     */
     public void sendMessNames(){
         String json = MessageUtil.getMessNames(getNames());
         sendMessageAll(json);
