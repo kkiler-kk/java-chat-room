@@ -123,6 +123,7 @@ public class ApplicationWebSocket {
         message.setUrl("dist/images/robot.png");
         String result = MessageUtil.sendGetRequest(URL);
         result = result.substring(23, result.length() -2);
+        result =  result.replaceAll("\\{br}","<br>");
         String toName = message.getSendName();
         message.setSendName("机器人");
         message.setText(result);
