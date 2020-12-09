@@ -47,6 +47,7 @@ public class ApplicationWebSocket {
     @OnMessage
     public void onMessage(String text) {
         try {
+            if(text == null || text.length() <= 0) throw new NullPointerException("Text Object to Null");
             ObjectMapper mapper = new ObjectMapper();
             Message message = mapper.readValue(text, Message.class);
             String type = message.getType();
@@ -101,44 +102,56 @@ public class ApplicationWebSocket {
      * 给所有客户端推送消息
      */
     public void sendMessageAll( Message message) {
-        message.setText(message.getText().replaceAll("\n", "<br>"));
-        String jsonMessage = JSON.toJSONString(message);
-        sendMessageAll(jsonMessage);
+        if (MessageUtil.isEmptyMessage(message)) {
+            message.setText(message.getText().replaceAll("\n", "<br>"));
+            String jsonMessage = JSON.toJSONString(message);
+            sendMessageAll(jsonMessage);
+        }
+        throw new NullPointerException("Message Object to Null");
     }
 
     /**
      * 单独给一位客户端推送消息
      */
     public void sendMessage(Message message) throws IOException {
-        message.setText(message.getText().replaceAll("\n", "<br>"));
-        String jsonMessage = JSON.toJSONString(message);
-        ApplicationWebSocket.webSocket.get(message.getReceiveName()).session.getBasicRemote().sendText(jsonMessage);
+        if (MessageUtil.isEmptyMessage(message)) {
+            message.setText(message.getText().replaceAll("\n", "<br>"));
+            String jsonMessage = JSON.toJSONString(message);
+            ApplicationWebSocket.webSocket.get(message.getReceiveName()).session.getBasicRemote().sendText(jsonMessage);
+        }
+        throw new NullPointerException("Message Object to Null");
     }
 
     /**
      * 机器人
      */
     public void sendRobot(Message message) throws IOException {
-        final String URL = "http://api.qingyunke.com/api.php?key=free&appid=0&msg=" + message.getText();
-        message.setUrl("dist/images/robot.png");
-        String result = MessageUtil.sendGetRequest(URL);
-        result = result.substring(23, result.length() -2);
-        result =  result.replaceAll("\\{br}","<br>");
-        String toName = message.getSendName();
-        message.setSendName("机器人");
-        message.setText(result);
-        String jsonMessage = JSON.toJSONString(message);
-        ApplicationWebSocket.webSocket.get(toName).session.getBasicRemote().sendText(jsonMessage);
+        if(MessageUtil.isEmptyMessage(message)){
+            final String URL = "http://api.qingyunke.com/api.php?key=free&appid=0&msg=" + message.getText();
+            message.setUrl("dist/images/robot.png");
+            String result = MessageUtil.sendGetRequest(URL);
+            result = result.substring(23, result.length() -2);
+            result =  result.replaceAll("\\{br}","<br>");
+            String toName = message.getSendName();
+            message.setSendName("机器人");
+            message.setText(result);
+            String jsonMessage = JSON.toJSONString(message);
+            ApplicationWebSocket.webSocket.get(toName).session.getBasicRemote().sendText(jsonMessage);
+        }
+        throw new NullPointerException("Message Object to Null");
     }
 
     /**
      * 设置客户端name 和实例化 websocket对象
      */
     public void setting(Message message) {
-        if(Objects.equals(null, message.getSendName())) return;
-        this.sendName = message.getSendName();
-        ApplicationWebSocket.webSocket.put(this.sendName, this);
-        sendMessNames();
+        if(MessageUtil.isEmptyMessage(message)){
+            if(Objects.equals(null, message.getSendName())) return;
+            this.sendName = message.getSendName();
+            ApplicationWebSocket.webSocket.put(this.sendName, this);
+            sendMessNames();
+        }
+        throw new NullPointerException("Message Object to Null");
     }
 
     /**

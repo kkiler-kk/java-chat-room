@@ -1,5 +1,6 @@
 package net.kk.chat.utils;
 
+import net.kk.chat.entity.Message;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -40,5 +41,8 @@ public class MessageUtil {
             ex.printStackTrace();
         }
         return "";
+    }
+    public static boolean isEmptyMessage(Message message){
+        return message != null;
     }
 }
