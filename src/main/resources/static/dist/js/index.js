@@ -64,7 +64,8 @@ const app = new Vue({
                 // 监听socket消息
                 this.socket.onmessage = this.getMessage
             }
-
+            console.log("Download the sub-item address");
+            console.log("https://github.com/KKiller-op/java-chat-room");
         },
         open() {
             console.log("socket连接成功")
